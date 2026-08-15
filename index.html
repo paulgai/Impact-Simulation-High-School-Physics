@@ -1,0 +1,1381 @@
+<!doctype html>
+<html lang="el" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Διαδραστική εκπαιδευτική εφαρμογή για τη μελέτη των κρούσεων στη Φυσική."
+    />
+    <title>Εργαστήριο Κρούσεων</title>
+
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link
+      rel="preload"
+      href="assets/billiard-hit.wav"
+      as="audio"
+      type="audio/wav"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <div class="app-shell">
+      <aside
+        id="settings-panel"
+        class="settings-panel"
+        aria-labelledby="settings-title"
+      >
+        <header class="panel-header">
+          <h1 id="settings-title">Προσομοίωση Κρούσεων</h1>
+        </header>
+
+        <div class="settings-content">
+          <div class="field-group">
+            <label for="collision-geometry" class="form-label"
+              >Κρούση</label
+            >
+            <select id="collision-geometry" class="form-select">
+              <option value="central" selected>Κεντρική (Μετωπική)</option>
+              <option value="eccentric">Έκκεντρη</option>
+              <option value="oblique">Πλάγια (Σημειακές Μάζες)</option>
+              <option value="massive-stationary">Με Ακίνητο Μεγάλης Μάζας</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="collision-character" class="form-label"
+              >Είδος κρούσης</label
+            >
+            <select id="collision-character" class="form-select">
+              <option value="elastic" selected>Ελαστική</option>
+              <option value="plastic">Πλαστική (Συσσωμάτωμα)</option>
+              <option value="inelastic">Ανελαστική (Χωρίς συσσωμάτωμα)</option>
+            </select>
+          </div>
+
+          <section
+            id="central-elastic-settings"
+            class="parameter-section"
+            aria-labelledby="parameters-title"
+          >
+            <h2 id="parameters-title" class="visually-hidden">
+              Παράμετροι προσομοίωσης
+            </h2>
+            <div
+              class="accordion parameter-accordion"
+              id="parameters-accordion"
+            >
+              <div id="positions-settings" class="accordion-item">
+                <h3 class="accordion-header">
+                  <button
+                    class="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#positions-collapse"
+                    aria-expanded="false"
+                    aria-controls="positions-collapse"
+                  >
+                    Αρχικές θέσεις
+                  </button>
+                </h3>
+                <div
+                  id="positions-collapse"
+                  class="accordion-collapse collapse"
+                >
+                  <div class="accordion-body">
+                    <div class="parameter-control">
+                      <div class="parameter-heading">
+                        <label for="x1-range"><i>x</i><sub>1</sub></label>
+                        <div class="number-field">
+                          <input
+                            id="x1-number"
+                            type="number"
+                            min="-10"
+                            max="10"
+                            step="0.1"
+                            value="-4.0"
+                            inputmode="decimal"
+                            aria-label="Αρχική θέση x1"
+                          />
+                          <span>m</span>
+                        </div>
+                      </div>
+                      <input
+                        id="x1-range"
+                        class="form-range"
+                        type="range"
+                        min="-10"
+                        max="10"
+                        step="0.1"
+                        value="-4.0"
+                        data-pair="x1-number"
+                      />
+                      <div class="range-limits" aria-hidden="true">
+                        <span>−10</span><span>10</span>
+                      </div>
+                    </div>
+
+                    <div class="parameter-control">
+                      <div class="parameter-heading">
+                        <label for="x2-range"><i>x</i><sub>2</sub></label>
+                        <div class="number-field">
+                          <input
+                            id="x2-number"
+                            type="number"
+                            min="-10"
+                            max="10"
+                            step="0.1"
+                            value="4.0"
+                            inputmode="decimal"
+                            aria-label="Αρχική θέση x2"
+                          />
+                          <span>m</span>
+                        </div>
+                      </div>
+                      <input
+                        id="x2-range"
+                        class="form-range"
+                        type="range"
+                        min="-10"
+                        max="10"
+                        step="0.1"
+                        value="4.0"
+                        data-pair="x2-number"
+                      />
+                      <div class="range-limits" aria-hidden="true">
+                        <span>−10</span><span>10</span>
+                      </div>
+                    </div>
+
+                    <div class="parameter-control eccentric-only" hidden>
+                      <div class="parameter-heading">
+                        <label for="y1-range"><i>y</i><sub>1</sub></label>
+                        <div class="number-field">
+                          <input
+                            id="y1-number"
+                            type="number"
+                            min="-1"
+                            max="1"
+                            step="0.1"
+                            value="-0.3"
+                            inputmode="decimal"
+                            aria-label="Αρχική κατακόρυφη θέση y1"
+                          />
+                          <span>m</span>
+                        </div>
+                      </div>
+                      <input
+                        id="y1-range"
+                        class="form-range"
+                        type="range"
+                        min="-1"
+                        max="1"
+                        step="0.1"
+                        value="-0.3"
+                        data-pair="y1-number"
+                      />
+                      <div class="range-limits" aria-hidden="true">
+                        <span>−1</span><span>1</span>
+                      </div>
+                    </div>
+
+                    <div class="parameter-control eccentric-only" hidden>
+                      <div class="parameter-heading">
+                        <label for="y2-range"><i>y</i><sub>2</sub></label>
+                        <div class="number-field">
+                          <input
+                            id="y2-number"
+                            type="number"
+                            min="-1"
+                            max="1"
+                            step="0.1"
+                            value="0.3"
+                            inputmode="decimal"
+                            aria-label="Αρχική κατακόρυφη θέση y2"
+                          />
+                          <span>m</span>
+                        </div>
+                      </div>
+                      <input
+                        id="y2-range"
+                        class="form-range"
+                        type="range"
+                        min="-1"
+                        max="1"
+                        step="0.1"
+                        value="0.3"
+                        data-pair="y2-number"
+                      />
+                      <div class="range-limits" aria-hidden="true">
+                        <span>−1</span><span>1</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="oblique-angle-settings" class="accordion-item" hidden>
+                <h3 class="accordion-header">
+                  <button
+                    class="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#oblique-angle-collapse"
+                    aria-expanded="false"
+                    aria-controls="oblique-angle-collapse"
+                  >
+                    Γωνία πρόσκρουσης
+                  </button>
+                </h3>
+                <div
+                  id="oblique-angle-collapse"
+                  class="accordion-collapse collapse"
+                >
+                  <div class="accordion-body">
+                    <div class="parameter-control">
+                      <div class="parameter-heading">
+                        <label for="theta-range">φ</label>
+                        <div class="number-field">
+                          <input
+                            id="theta-number"
+                            type="number"
+                            min="0"
+                            max="180"
+                            step="1"
+                            value="60"
+                            inputmode="numeric"
+                            aria-label="Γωνία πρόσκρουσης φ"
+                          />
+                          <span>°</span>
+                        </div>
+                      </div>
+                      <input
+                        id="theta-range"
+                        class="form-range"
+                        type="range"
+                        min="0"
+                        max="180"
+                        step="1"
+                        value="60"
+                        data-pair="theta-number"
+                      />
+                      <div class="range-limits" aria-hidden="true">
+                        <span>0°</span><span>180°</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="body-parameters-settings" class="accordion-item">
+                <h3 class="accordion-header">
+                  <button
+                    class="accordion-button"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#masses-collapse"
+                    aria-expanded="true"
+                    aria-controls="masses-collapse"
+                  >
+                    Παράμετροι σωμάτων
+                  </button>
+                </h3>
+                <div id="masses-collapse" class="accordion-collapse collapse show">
+                  <div class="accordion-body">
+                    <div class="parameter-control">
+                      <div class="parameter-heading">
+                        <div class="parameter-label-with-status">
+                          <label for="m1-range"><i>m</i><sub>1</sub></label>
+                          <span id="m-point-mass" class="point-mass-indicator" hidden
+                            >Σημειακή μάζα</span
+                          >
+                        </div>
+                        <div class="number-field">
+                          <input
+                            id="m1-number"
+                            type="number"
+                            min="0.1"
+                            max="5"
+                            step="0.1"
+                            value="1.0"
+                            inputmode="decimal"
+                            aria-label="Μάζα m1"
+                          />
+                          <span>kg</span>
+                        </div>
+                      </div>
+                      <input
+                        id="m1-range"
+                        class="form-range"
+                        type="range"
+                        min="0.1"
+                        max="5"
+                        step="0.1"
+                        value="1.0"
+                        data-pair="m1-number"
+                      />
+                      <div class="range-limits" aria-hidden="true">
+                        <span>0,1</span><span>5</span>
+                      </div>
+                    </div>
+
+                    <div class="parameter-control">
+                      <div class="parameter-heading">
+                        <label for="m2-range"><i>m</i><sub>2</sub></label>
+                        <div class="number-field">
+                          <input
+                            id="m2-number"
+                            type="number"
+                            min="0.1"
+                            max="5"
+                            step="0.1"
+                            value="1.5"
+                            inputmode="decimal"
+                            aria-label="Μάζα m2"
+                          />
+                          <span>kg</span>
+                        </div>
+                      </div>
+                      <input
+                        id="m2-range"
+                        class="form-range"
+                        type="range"
+                        min="0.1"
+                        max="5"
+                        step="0.1"
+                        value="1.5"
+                        data-pair="m2-number"
+                      />
+                      <div class="range-limits" aria-hidden="true">
+                        <span>0,1</span><span>5</span>
+                      </div>
+                    </div>
+
+                    <div class="parameter-control radius-control" hidden>
+                      <div class="parameter-heading">
+                        <div class="parameter-label-with-status">
+                          <label for="r1-range"><i>R</i><sub>1</sub></label>
+                          <span id="r1-point-mass" class="point-mass-indicator" hidden>Σημειακή μάζα</span>
+                        </div>
+                        <div class="number-field">
+                          <input
+                            id="r1-number"
+                            type="number"
+                            min="0.1"
+                            max="1"
+                            step="0.1"
+                            value="0.5"
+                            inputmode="decimal"
+                            aria-label="Ακτίνα R1"
+                          />
+                          <span>m</span>
+                        </div>
+                      </div>
+                      <input
+                        id="r1-range"
+                        class="form-range"
+                        type="range"
+                        min="0.1"
+                        max="1"
+                        step="0.1"
+                        value="0.5"
+                        data-pair="r1-number"
+                      />
+                      <div class="range-limits" aria-hidden="true">
+                        <span id="r1-minimum">0,1</span><span>1</span>
+                      </div>
+                    </div>
+
+                    <div class="parameter-control radius-control" hidden>
+                      <div class="parameter-heading">
+                        <div class="parameter-label-with-status">
+                          <label for="r2-range"><i>R</i><sub>2</sub></label>
+                          <span id="r2-point-mass" class="point-mass-indicator" hidden>Σημειακή μάζα</span>
+                        </div>
+                        <div class="number-field">
+                          <input
+                            id="r2-number"
+                            type="number"
+                            min="0.1"
+                            max="1"
+                            step="0.1"
+                            value="0.5"
+                            inputmode="decimal"
+                            aria-label="Ακτίνα R2"
+                          />
+                          <span>m</span>
+                        </div>
+                      </div>
+                      <input
+                        id="r2-range"
+                        class="form-range"
+                        type="range"
+                        min="0.1"
+                        max="1"
+                        step="0.1"
+                        value="0.5"
+                        data-pair="r2-number"
+                      />
+                      <div class="range-limits" aria-hidden="true">
+                        <span id="r2-minimum">0,1</span><span>1</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-item">
+                <h3 class="accordion-header">
+                  <button
+                    class="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#velocities-collapse"
+                    aria-expanded="false"
+                    aria-controls="velocities-collapse"
+                  >
+                    Αρχικές ταχύτητες
+                  </button>
+                </h3>
+                <div
+                  id="velocities-collapse"
+                  class="accordion-collapse collapse"
+                >
+                  <div class="accordion-body">
+                    <div class="parameter-control">
+                      <div class="parameter-heading">
+                        <label for="u1-range"><i>u</i><sub>1</sub></label>
+                        <div class="number-field">
+                          <input
+                            id="u1-number"
+                            type="number"
+                            min="-5"
+                            max="5"
+                            step="0.1"
+                            value="4.0"
+                            inputmode="decimal"
+                            aria-label="Ταχύτητα u1"
+                          />
+                          <span>m/s</span>
+                        </div>
+                      </div>
+                      <input
+                        id="u1-range"
+                        class="form-range"
+                        type="range"
+                        min="-5"
+                        max="5"
+                        step="0.1"
+                        value="4.0"
+                        data-pair="u1-number"
+                      />
+                      <div id="u1-range-limits" class="range-limits" aria-hidden="true">
+                        <span>−5</span><span>5</span>
+                      </div>
+                    </div>
+
+                    <div class="parameter-control">
+                      <div class="parameter-heading">
+                        <label for="u2-range"><i>u</i><sub>2</sub></label>
+                        <div class="number-field">
+                          <input
+                            id="u2-number"
+                            type="number"
+                            min="-5"
+                            max="5"
+                            step="0.1"
+                            value="-2.0"
+                            inputmode="decimal"
+                            aria-label="Ταχύτητα u2"
+                          />
+                          <span>m/s</span>
+                        </div>
+                      </div>
+                      <input
+                        id="u2-range"
+                        class="form-range"
+                        type="range"
+                        min="-5"
+                        max="5"
+                        step="0.1"
+                        value="-2.0"
+                        data-pair="u2-number"
+                      />
+                      <div id="u2-range-limits" class="range-limits" aria-hidden="true">
+                        <span>−5</span><span>5</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="energy-loss-settings" class="accordion-item" hidden>
+                <h3 class="accordion-header">
+                  <button
+                    class="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#energy-loss-collapse"
+                    aria-expanded="false"
+                    aria-controls="energy-loss-collapse"
+                  >
+                    Απώλεια κινητικής ενέργειας
+                  </button>
+                </h3>
+                <div
+                  id="energy-loss-collapse"
+                  class="accordion-collapse collapse"
+                >
+                  <div class="accordion-body">
+                    <div class="parameter-control">
+                      <div class="parameter-heading">
+                        <label for="energy-loss-range">|ΔK| / Kολ</label>
+                        <div class="number-field">
+                          <input
+                            id="energy-loss-number"
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                            value="20.0"
+                            inputmode="decimal"
+                            aria-label="Ποσοστό απώλειας κινητικής ενέργειας"
+                          />
+                          <span>%</span>
+                        </div>
+                      </div>
+                      <input
+                        id="energy-loss-range"
+                        class="form-range"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        value="20.0"
+                        data-pair="energy-loss-number"
+                      />
+                      <div class="range-limits" aria-hidden="true">
+                        <span>0</span><span id="energy-loss-maximum">100</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <p id="settings-placeholder" class="selection-placeholder" hidden>
+            Οι παράμετροι για αυτόν τον συνδυασμό θα προστεθούν στη συνέχεια.
+          </p>
+        </div>
+      </aside>
+
+      <button
+        id="settings-panel-toggle"
+        class="side-panel-toggle settings-panel-toggle"
+        type="button"
+        aria-controls="settings-panel"
+        aria-expanded="true"
+        title="Απόκρυψη ρυθμίσεων"
+      >
+        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+        <span class="visually-hidden">Απόκρυψη ρυθμίσεων</span>
+      </button>
+
+      <main class="simulation-area">
+        <div class="top-actions">
+          <div
+            class="theme-switcher"
+            role="group"
+            aria-label="Εργαλεία προβολής"
+          >
+            <button
+              class="theme-button active"
+              type="button"
+              data-theme="light"
+              aria-label="Φωτεινό θέμα"
+              aria-pressed="true"
+              title="Φωτεινό θέμα"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="3.5"></circle>
+                <path
+                  d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"
+                ></path>
+              </svg>
+            </button>
+            <button
+              class="theme-button"
+              type="button"
+              data-theme="dark"
+              aria-label="Σκοτεινό θέμα"
+              aria-pressed="false"
+              title="Σκοτεινό θέμα"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M20.5 15.1A8.8 8.8 0 0 1 8.9 3.5 8.8 8.8 0 1 0 20.5 15.1Z"
+                ></path>
+              </svg>
+            </button>
+            <button
+              id="toggle-fullscreen"
+              class="theme-button view-action-button toolbar-divider"
+              type="button"
+              aria-label="Πλήρης οθόνη"
+              aria-pressed="false"
+              title="Πλήρης οθόνη"
+            >
+              <i class="bi bi-fullscreen" aria-hidden="true"></i>
+            </button>
+            <button
+              id="zoom-in"
+              class="theme-button view-action-button"
+              type="button"
+              aria-label="Μεγέθυνση"
+              title="Μεγέθυνση"
+            >
+              <i class="bi bi-zoom-in" aria-hidden="true"></i>
+            </button>
+            <button
+              id="zoom-out"
+              class="theme-button view-action-button"
+              type="button"
+              aria-label="Σμίκρυνση"
+              title="Σμίκρυνση"
+            >
+              <i class="bi bi-zoom-out" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <section class="workspace" aria-label="Προσομοίωση κρούσης">
+          <div
+            id="simulation-viewport"
+            class="simulation-viewport"
+            tabindex="0"
+            aria-label="Χώρος προσομοίωσης. Χρησιμοποιήστε τη ρόδα για μεγέθυνση και σύρετε για μετακίνηση."
+          >
+            <div id="axis-x" class="coordinate-axis axis-x" aria-hidden="true">
+              <span>x</span>
+            </div>
+            <div id="axis-y" class="coordinate-axis axis-y" aria-hidden="true">
+              <span>y</span>
+            </div>
+            <div
+            id="simulation-world"
+              class="simulation-world"
+              aria-hidden="true"
+            >
+              <div id="massive-wall" class="massive-wall" hidden></div>
+              <div id="compound-body" class="compound-body">
+                <svg
+                  class="sphere-fill-layer"
+                  viewBox="0 0 1200 600"
+                  preserveAspectRatio="none"
+                >
+                  <circle
+                    id="sphere-fill-m1"
+                    class="sphere-fill sphere-fill-m1"
+                  ></circle>
+                  <circle
+                    id="sphere-fill-m2"
+                    class="sphere-fill sphere-fill-m2"
+                  ></circle>
+                </svg>
+                <svg
+                  class="weld-overlay"
+                  viewBox="0 0 1200 600"
+                  preserveAspectRatio="none"
+                >
+                  <defs>
+                    <clipPath
+                      id="sphere-m1-clip"
+                      clipPathUnits="userSpaceOnUse"
+                    >
+                      <circle
+                        id="weld-clip-m1"
+                        cx="380"
+                        cy="300"
+                        r="26"
+                      ></circle>
+                    </clipPath>
+                    <filter
+                      id="weld-outline-filter"
+                      x="-20%"
+                      y="-20%"
+                      width="140%"
+                      height="140%"
+                    >
+                      <feMorphology
+                        id="weld-outline-morphology"
+                        in="SourceAlpha"
+                        operator="dilate"
+                        radius="1"
+                        result="dilated"
+                      ></feMorphology>
+                      <feComposite
+                        in="dilated"
+                        in2="SourceAlpha"
+                        operator="out"
+                        result="outer-ring"
+                      ></feComposite>
+                      <feFlood
+                        class="weld-outline-color"
+                        result="outline-color"
+                      ></feFlood>
+                      <feComposite
+                        in="outline-color"
+                        in2="outer-ring"
+                        operator="in"
+                      ></feComposite>
+                    </filter>
+                  </defs>
+                  <circle
+                    id="weld-intersection"
+                    cx="820"
+                    cy="300"
+                    r="27"
+                    clip-path="url(#sphere-m1-clip)"
+                  ></circle>
+                  <g
+                    class="weld-union-outline"
+                    filter="url(#weld-outline-filter)"
+                  >
+                    <circle
+                      id="weld-outline-m1"
+                      cx="380"
+                      cy="300"
+                      r="26"
+                    ></circle>
+                    <circle
+                      id="weld-outline-m2"
+                      cx="820"
+                      cy="300"
+                      r="27"
+                    ></circle>
+                  </g>
+                </svg>
+                <svg
+                  class="sphere-details-layer"
+                  viewBox="0 0 1200 600"
+                  preserveAspectRatio="none"
+                >
+                  <g class="individual-sphere-outlines">
+                    <circle
+                      id="sphere-outline-m1"
+                      class="sphere-outline-circle"
+                    ></circle>
+                    <circle
+                      id="sphere-outline-m2"
+                      class="sphere-outline-circle"
+                    ></circle>
+                  </g>
+                  <circle
+                    id="sphere-center-m1"
+                    class="sphere-center-point"
+                  ></circle>
+                  <circle
+                    id="sphere-center-m2"
+                    class="sphere-center-point"
+                  ></circle>
+                </svg>
+              </div>
+
+              <svg
+                id="geometry-layer"
+                class="geometry-layer"
+                viewBox="0 0 1200 600"
+                preserveAspectRatio="none"
+                hidden
+              >
+                <g id="trajectory-carriers">
+                  <line id="carrier-u1" class="geometry-carrier"></line>
+                  <line id="carrier-u2" class="geometry-carrier"></line>
+                  <line id="distance-d" class="geometry-dimension"></line>
+                  <line
+                    id="distance-d-cap-1"
+                    class="geometry-dimension-cap"
+                  ></line>
+                  <line
+                    id="distance-d-cap-2"
+                    class="geometry-dimension-cap"
+                  ></line>
+                </g>
+                <g id="outgoing-geometry" hidden>
+                  <line
+                    id="outgoing-carrier-u1"
+                    class="geometry-carrier outgoing-carrier-m1"
+                  ></line>
+                  <line
+                    id="outgoing-carrier-u2"
+                    class="geometry-carrier outgoing-carrier-m2"
+                  ></line>
+                  <path
+                    id="outgoing-angle-arc-u1"
+                    class="outgoing-angle-arc outgoing-angle-m1"
+                  ></path>
+                  <polygon
+                    id="outgoing-angle-head-u1"
+                    class="outgoing-angle-head outgoing-angle-head-m1"
+                  ></polygon>
+                  <path
+                    id="outgoing-angle-arc-u2"
+                    class="outgoing-angle-arc outgoing-angle-m2"
+                  ></path>
+                  <polygon
+                    id="outgoing-angle-head-u2"
+                    class="outgoing-angle-head outgoing-angle-head-m2"
+                  ></polygon>
+                </g>
+                <g id="oblique-geometry" hidden>
+                  <line
+                    id="oblique-trajectory-1"
+                    class="geometry-carrier outgoing-carrier-m1"
+                  ></line>
+                  <line
+                    id="oblique-trajectory-2"
+                    class="geometry-carrier outgoing-carrier-m2"
+                  ></line>
+                  <line
+                    id="oblique-outgoing-trajectory-1"
+                    class="geometry-carrier outgoing-carrier-m1"
+                    hidden
+                  ></line>
+                  <line
+                    id="oblique-outgoing-trajectory-2"
+                    class="geometry-carrier outgoing-carrier-m2"
+                    hidden
+                  ></line>
+                  <path
+                    id="oblique-angle-arc"
+                    class="outgoing-angle-arc oblique-angle-arc"
+                  ></path>
+                  <path
+                    id="oblique-phi-angle-arc"
+                    class="outgoing-angle-arc oblique-angle-arc"
+                    hidden
+                  ></path>
+                  <polygon
+                    id="oblique-common-angle-head"
+                    class="outgoing-angle-head outgoing-angle-head-common"
+                    hidden
+                  ></polygon>
+                </g>
+                <g id="collision-coordinate-system" hidden>
+                  <line
+                    id="collision-axis-x"
+                    class="collision-local-axis"
+                  ></line>
+                  <polygon
+                    id="collision-axis-x-head"
+                    class="collision-axis-head"
+                  ></polygon>
+                  <line
+                    id="collision-axis-y"
+                    class="collision-local-axis"
+                  ></line>
+                  <polygon
+                    id="collision-axis-y-head"
+                    class="collision-axis-head"
+                  ></polygon>
+
+                  <line
+                    id="projection-u1-from-x"
+                    class="component-projection component-m1"
+                  ></line>
+                  <line
+                    id="projection-u1-from-y"
+                    class="component-projection component-m1"
+                  ></line>
+                  <line
+                    id="projection-u2-from-x"
+                    class="component-projection component-m2"
+                  ></line>
+                  <line
+                    id="projection-u2-from-y"
+                    class="component-projection component-m2"
+                  ></line>
+                  <line
+                    id="component-u1-x"
+                    class="velocity-component component-m1"
+                  ></line>
+                  <polygon
+                    id="component-u1-x-head"
+                    class="component-head component-m1-head"
+                  ></polygon>
+                  <line
+                    id="component-u1-y"
+                    class="velocity-component component-m1"
+                  ></line>
+                  <polygon
+                    id="component-u1-y-head"
+                    class="component-head component-m1-head"
+                  ></polygon>
+                  <line
+                    id="component-u2-x"
+                    class="velocity-component component-m2"
+                  ></line>
+                  <polygon
+                    id="component-u2-x-head"
+                    class="component-head component-m2-head"
+                  ></polygon>
+                  <line
+                    id="component-u2-y"
+                    class="velocity-component component-m2"
+                  ></line>
+                  <polygon
+                    id="component-u2-y-head"
+                    class="component-head component-m2-head"
+                  ></polygon>
+                </g>
+              </svg>
+
+              <div
+                id="geometry-label-d"
+                class="geometry-label geometry-label-neutral"
+                hidden
+              ></div>
+              <div
+                id="geometry-label-theta1"
+                class="geometry-label geometry-label-m1"
+                hidden
+              ></div>
+              <div
+                id="geometry-label-theta2"
+                class="geometry-label geometry-label-m2"
+                hidden
+              ></div>
+              <div
+                id="geometry-label-oblique-angle"
+                class="geometry-label geometry-label-neutral"
+                hidden
+              ></div>
+              <div
+                id="geometry-label-oblique-phi"
+                class="geometry-label geometry-label-neutral"
+                hidden
+              ></div>
+              <div
+                id="geometry-label-x-axis"
+                class="geometry-label geometry-label-neutral"
+                hidden
+              ></div>
+              <div
+                id="geometry-label-y-axis"
+                class="geometry-label geometry-label-neutral"
+                hidden
+              ></div>
+              <div
+                id="geometry-label-u1-x"
+                class="geometry-label geometry-label-m1"
+                hidden
+              ></div>
+              <div
+                id="geometry-label-u1-y"
+                class="geometry-label geometry-label-m1"
+                hidden
+              ></div>
+              <div
+                id="geometry-label-u2-x"
+                class="geometry-label geometry-label-m2"
+                hidden
+              ></div>
+              <div
+                id="geometry-label-u2-y"
+                class="geometry-label geometry-label-m2"
+                hidden
+              ></div>
+
+              <div id="collision-effect" class="collision-effect">
+                <span class="impact-ring"></span>
+                <i class="impact-ray" style="--angle: 0deg"></i>
+                <i class="impact-ray" style="--angle: 45deg"></i>
+                <i class="impact-ray" style="--angle: 90deg"></i>
+                <i class="impact-ray" style="--angle: 135deg"></i>
+                <i class="impact-ray" style="--angle: 180deg"></i>
+                <i class="impact-ray" style="--angle: 225deg"></i>
+                <i class="impact-ray" style="--angle: 270deg"></i>
+                <i class="impact-ray" style="--angle: 315deg"></i>
+              </div>
+              <div id="collision-point" class="collision-point" hidden>
+                <span class="collision-point-dot"></span>
+                <span class="collision-point-label"><i>K</i></span>
+              </div>
+
+              <svg
+                class="vectors-layer"
+                viewBox="0 0 1200 600"
+                preserveAspectRatio="none"
+              >
+                <line
+                  id="vector-u1"
+                  class="velocity-vector vector-u1"
+                  x1="380"
+                  y1="300"
+                  x2="556"
+                  y2="300"
+                ></line>
+                <polygon
+                  id="vector-u1-head"
+                  class="velocity-vector-head vector-u1-head"
+                ></polygon>
+                <line
+                  id="vector-u2"
+                  class="velocity-vector vector-u2"
+                  x1="820"
+                  y1="300"
+                  x2="732"
+                  y2="300"
+                ></line>
+                <polygon
+                  id="vector-u2-head"
+                  class="velocity-vector-head vector-u2-head"
+                ></polygon>
+                <line
+                  id="vector-common"
+                  class="velocity-vector vector-common"
+                  x1="600"
+                  y1="300"
+                  x2="600"
+                  y2="300"
+                  hidden
+                ></line>
+                <polygon
+                  id="vector-common-head"
+                  class="velocity-vector-head vector-common-head"
+                  hidden
+                ></polygon>
+              </svg>
+
+              <div
+                id="vector-u1-label"
+                class="vector-label vector-label-u1"
+              ></div>
+              <div
+                id="vector-u2-label"
+                class="vector-label vector-label-u2"
+              ></div>
+              <div
+                id="vector-common-label"
+                class="vector-label vector-label-common"
+                hidden
+              ></div>
+
+              <div id="label-m1" class="mass-label mass-label-m1">
+                <i>m</i><sub>1</sub>
+              </div>
+              <div id="label-m2" class="mass-label mass-label-m2">
+                <i>m</i><sub>2</sub>
+              </div>
+              <div
+                id="label-combined-mass"
+                class="mass-label combined-mass-label"
+                hidden
+              >
+                <i>m</i><sub>1</sub> + <i>m</i><sub>2</sub>
+              </div>
+            </div>
+
+            <button
+              id="reset-view"
+              class="reset-view"
+              type="button"
+              title="Επαναφορά προβολής"
+              aria-label="Επαναφορά προβολής"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 12a8 8 0 1 0 2.34-5.66L4 8.68M4 4v4.68h4.68"></path>
+              </svg>
+            </button>
+
+            <label
+              id="geometric-features-control"
+              class="geometric-features-control"
+              hidden
+            >
+              <input id="geometric-features" type="checkbox" />
+              <span>Γεωμετρικά Χαρακτηριστικά</span>
+            </label>
+
+            <div
+              class="simulation-controls"
+              role="group"
+              aria-label="Χειρισμός προσομοίωσης"
+            >
+              <button
+                id="exactly-before-collision"
+                class="simulation-button collision-snapshot-button"
+                type="button"
+                aria-label="Ακριβώς πριν από την κρούση"
+                aria-pressed="false"
+              >
+                <span>Ακριβώς πριν</span>
+                <span>από την κρούση</span>
+              </button>
+              <button
+                id="restart-simulation"
+                class="simulation-button"
+                type="button"
+                title="Επανεκκίνηση"
+                aria-label="Επανεκκίνηση προσομοίωσης"
+              >
+                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+              </button>
+              <button
+                id="step-backward"
+                class="simulation-button"
+                type="button"
+                title="Ένα καρέ πίσω"
+                aria-label="Ένα καρέ πίσω"
+              >
+                <i class="bi bi-skip-backward-fill" aria-hidden="true"></i>
+              </button>
+              <button
+                id="play-simulation"
+                class="simulation-button primary"
+                type="button"
+                title="Έναρξη"
+                aria-label="Έναρξη προσομοίωσης"
+              >
+                <i class="bi bi-play-fill" aria-hidden="true"></i>
+              </button>
+              <button
+                id="pause-simulation"
+                class="simulation-button"
+                type="button"
+                title="Παύση"
+                aria-label="Παύση προσομοίωσης"
+                disabled
+              >
+                <i class="bi bi-pause-fill" aria-hidden="true"></i>
+              </button>
+              <button
+                id="step-forward"
+                class="simulation-button"
+                type="button"
+                title="Ένα καρέ μπροστά"
+                aria-label="Ένα καρέ μπροστά"
+              >
+                <i class="bi bi-skip-forward-fill" aria-hidden="true"></i>
+              </button>
+              <button
+                id="exactly-after-collision"
+                class="simulation-button collision-snapshot-button"
+                type="button"
+                aria-label="Ακριβώς μετά από την κρούση"
+                aria-pressed="false"
+              >
+                <span>Ακριβώς μετά</span>
+                <span>από την κρούση</span>
+              </button>
+            </div>
+
+            <aside id="results-panel" class="results-panel" aria-live="polite">
+              <button
+                id="results-panel-toggle"
+                class="side-panel-toggle results-panel-toggle"
+                type="button"
+                aria-controls="results-panel"
+                aria-expanded="true"
+                title="Απόκρυψη αποτελεσμάτων"
+              >
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                <span class="visually-hidden">Απόκρυψη αποτελεσμάτων</span>
+              </button>
+              <p id="position-results-heading" class="results-heading">Θέσεις</p>
+              <div id="position-results-grid" class="results-grid">
+                <span class="scalar-position"><i>x</i><sub>1</sub></span
+                ><span class="scalar-position">=</span
+                ><strong id="result-x1" class="scalar-position">−4,0 m</strong>
+                <span class="scalar-position"><i>x</i><sub>2</sub></span
+                ><span class="scalar-position">=</span
+                ><strong id="result-x2" class="scalar-position">4,0 m</strong>
+                <span class="eccentric-position" hidden><i>y</i><sub>1</sub></span
+                ><span class="eccentric-position" hidden>=</span
+                ><strong id="result-y1" class="eccentric-position" hidden>−0,3 m</strong>
+                <span class="eccentric-position" hidden><i>y</i><sub>2</sub></span
+                ><span class="eccentric-position" hidden>=</span
+                ><strong id="result-y2" class="eccentric-position" hidden>0,3 m</strong>
+                <span class="scalar-position"><i>x</i><sub>κ</sub></span
+                ><span class="scalar-position">=</span
+                ><strong id="result-collision-x" class="scalar-position">–</strong>
+                <span class="eccentric-point-position" hidden>(<i>x</i><sub>1</sub>, <i>y</i><sub>1</sub>)</span
+                ><span class="eccentric-point-position" hidden>=</span
+                ><strong id="result-point-1" class="eccentric-point-position" hidden>–</strong>
+                <span class="eccentric-point-position" hidden>(<i>x</i><sub>2</sub>, <i>y</i><sub>2</sub>)</span
+                ><span class="eccentric-point-position" hidden>=</span
+                ><strong id="result-point-2" class="eccentric-point-position" hidden>–</strong>
+                <span class="eccentric-point-position" hidden>(<i>x</i><sub>κ</sub>, <i>y</i><sub>κ</sub>)</span
+                ><span class="eccentric-point-position" hidden>=</span
+                ><strong id="result-collision-point" class="eccentric-point-position" hidden>–</strong>
+              </div>
+
+              <p class="results-heading results-subheading">Ταχύτητες</p>
+              <div id="standard-velocity-results" class="results-grid">
+                <span><i>u</i><sub>1</sub></span
+                ><span>=</span><strong id="result-initial-u1">0,0 m/s</strong>
+                <span><i>u</i><sub>2</sub></span
+                ><span>=</span><strong id="result-initial-u2">0,0 m/s</strong>
+                <span class="individual-final-velocity"
+                  ><i>u</i><sub>1</sub>′</span
+                ><span class="individual-final-velocity">=</span
+                ><strong id="result-u1" class="individual-final-velocity"
+                  >–</strong
+                >
+                <span class="individual-final-velocity"
+                  ><i>u</i><sub>2</sub>′</span
+                ><span class="individual-final-velocity">=</span
+                ><strong id="result-u2" class="individual-final-velocity"
+                  >–</strong
+                >
+                <span class="eccentric-final-angle" hidden>θ<sub>1</sub>′</span
+                ><span class="eccentric-final-angle" hidden>=</span
+                ><strong
+                  id="result-angle-u1"
+                  class="eccentric-final-angle"
+                  hidden
+                  >–</strong
+                >
+                <span class="eccentric-final-angle" hidden>θ<sub>2</sub>′</span
+                ><span class="eccentric-final-angle" hidden>=</span
+                ><strong
+                  id="result-angle-u2"
+                  class="eccentric-final-angle"
+                  hidden
+                  >–</strong
+                >
+                <span class="common-final-velocity" hidden><i>v</i>′</span
+                ><span class="common-final-velocity" hidden>=</span
+                ><strong
+                  id="result-common-velocity"
+                  class="common-final-velocity"
+                  hidden
+                  >–</strong
+                >
+                <span class="oblique-plastic-angle" hidden>θ</span
+                ><span class="oblique-plastic-angle" hidden>=</span
+                ><strong
+                  id="result-common-angle"
+                  class="oblique-plastic-angle"
+                  hidden
+                  >–</strong
+                >
+                <span class="eccentric-plastic-result" hidden>ω</span
+                ><span class="eccentric-plastic-result" hidden>=</span
+                ><strong
+                  id="result-angular-velocity"
+                  class="eccentric-plastic-result"
+                  hidden
+                  >–</strong
+                >
+              </div>
+
+              <div id="massive-wall-velocity-results" class="results-grid" hidden>
+                <span><i>u</i></span><span>=</span
+                ><strong id="result-wall-u">–</strong>
+                <span><i>u</i>′</span><span>=</span
+                ><strong id="result-wall-u-prime">–</strong>
+                <span>φ</span><span>=</span
+                ><strong id="result-wall-incidence-angle">–</strong>
+                <span>θ</span><span>=</span
+                ><strong id="result-wall-reflection-angle">–</strong>
+              </div>
+
+              <p class="results-heading results-subheading">
+                Κινητικές ενέργειες
+              </p>
+              <div id="standard-energy-results" class="results-grid">
+                <span><i>K</i><sub>1</sub></span
+                ><span>=</span><strong id="result-k1">0,00 J</strong>
+                <span><i>K</i><sub>2</sub></span
+                ><span>=</span><strong id="result-k2">0,00 J</strong>
+                <span class="individual-final-energy"
+                  ><i>K</i><sub>1</sub>′</span
+                ><span class="individual-final-energy">=</span
+                ><strong id="result-final-k1" class="individual-final-energy"
+                  >–</strong
+                >
+                <span class="individual-final-energy"
+                  ><i>K</i><sub>2</sub>′</span
+                ><span class="individual-final-energy">=</span
+                ><strong id="result-final-k2" class="individual-final-energy"
+                  >–</strong
+                >
+                <span><i>K</i><sub>ολ</sub></span
+                ><span>=</span><strong id="result-total-k">0,00 J</strong>
+                <span class="individual-final-energy"
+                  ><i>K</i><sub>ολ</sub>′</span
+                ><span class="individual-final-energy">=</span
+                ><strong
+                  id="result-final-total-k"
+                  class="individual-final-energy"
+                  >–</strong
+                >
+                <span class="system-final-energy" hidden
+                  ><i>K</i><sub>συσ</sub>′</span
+                ><span class="system-final-energy" hidden>=</span
+                ><strong id="result-system-k" class="system-final-energy" hidden
+                  >–</strong
+                >
+                <span><i>|ΔK|</i></span
+                ><span>=</span><strong id="result-q">–</strong>
+              </div>
+              <div id="massive-wall-energy-results" class="results-grid" hidden>
+                <span><i>K</i></span><span>=</span
+                ><strong id="result-wall-k">–</strong>
+                <span><i>K</i>′</span><span>=</span
+                ><strong id="result-wall-k-prime">–</strong>
+                <span>Δ<i>K</i></span><span>=</span
+                ><strong id="result-wall-delta-k">–</strong>
+              </div>
+              <p id="collision-message" class="collision-message" hidden></p>
+            </aside>
+
+            <div class="copyright-notice">
+              Developed by Pavlos Gaintatzis · © 2026
+            </div>
+          </div>
+
+          <div
+            id="simulation-placeholder"
+            class="simulation-placeholder"
+            hidden
+          >
+            Η προσομοίωση είναι διαθέσιμη για τις κεντρικές κρούσεις και για
+            ελαστικές ή πλαστικές έκκεντρες και πλάγιες κρούσεις, καθώς και για
+            ελαστική ή ανελαστική κρούση με ακίνητο σώμα μεγάλης μάζας.
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <audio
+      id="collision-sound"
+      src="assets/billiard-hit.wav"
+      preload="auto"
+    ></audio>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
