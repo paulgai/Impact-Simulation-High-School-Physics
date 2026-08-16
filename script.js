@@ -698,6 +698,24 @@ function readParameters() {
   };
 }
 
+function maximumCentralEnergyLossPercent(m1, m2, u1, u2) {
+  const totalMass = m1 + m2;
+  const twiceInitialKineticEnergy = m1 * u1 ** 2 + m2 * u2 ** 2;
+
+  if (totalMass <= 0 || twiceInitialKineticEnergy <= 1e-12) return 0;
+
+  const reducedMass = m1 * m2 / totalMass;
+  return clamp(
+    100 * reducedMass * (u1 - u2) ** 2 / twiceInitialKineticEnergy,
+    0,
+    100,
+  );
+}
+
+function displayedEnergyLossMaximum(theoreticalMaximum) {
+  return Math.floor((theoreticalMaximum + 1e-9) * 10) / 10;
+}
+
 function createObliqueModel(parameters) {
   const { theta, m1, m2, u1, u2 } = parameters;
   const isPlastic = characterSelect.value === "plastic";
@@ -963,13 +981,34 @@ function createModel() {
   const elasticV1 = ((m1 - m2) * u1 + 2 * m2 * u2) / (m1 + m2);
   const elasticV2 = (2 * m1 * u1 + (m2 - m1) * u2) / (m1 + m2);
   const commonVelocity = (m1 * u1 + m2 * u2) / (m1 + m2);
+  const maximumEnergyLossPercent = maximumCentralEnergyLossPercent(
+    m1,
+    m2,
+    u1,
+    u2,
+  );
+  const displayedMaximumEnergyLossPercent = displayedEnergyLossMaximum(
+    maximumEnergyLossPercent,
+  );
+  const isDisplayedMaximumSelected =
+    Math.abs(
+      parameters.energyLossPercent - displayedMaximumEnergyLossPercent,
+    ) <= 1e-9;
   const energyLossPercent = isInelastic
-    ? clamp(parameters.energyLossPercent, 0, 100)
+    ? isDisplayedMaximumSelected
+      ? maximumEnergyLossPercent
+      : clamp(parameters.energyLossPercent, 0, maximumEnergyLossPercent)
     : 0;
-  const remainingEnergyRatio = 1 - energyLossPercent / 100;
-  const inelasticSpeedScale = Math.sqrt(Math.max(0, remainingEnergyRatio));
-  const inelasticV1 = elasticV1 * inelasticSpeedScale;
-  const inelasticV2 = elasticV2 * inelasticSpeedScale;
+  const restitution = maximumEnergyLossPercent > 1e-12
+    ? Math.sqrt(
+        Math.max(0, 1 - energyLossPercent / maximumEnergyLossPercent),
+      )
+    : 0;
+  const finalRelativeVelocity = -(u1 - u2) * restitution;
+  const inelasticV1 =
+    commonVelocity + (m2 / (m1 + m2)) * finalRelativeVelocity;
+  const inelasticV2 =
+    commonVelocity - (m1 / (m1 + m2)) * finalRelativeVelocity;
   const v1 = isPlastic ? commonVelocity : isInelastic ? inelasticV1 : elasticV1;
   const v2 = isPlastic ? commonVelocity : isInelastic ? inelasticV2 : elasticV2;
   const overlapDepth = Math.min(diameter1, diameter2) * PLASTIC_OVERLAP_RATIO;
@@ -1112,6 +1151,7 @@ function createModel() {
     isPlastic,
     isInelastic,
     energyLossPercent,
+    maximumEnergyLossPercent,
     commonVelocity,
     contactAngle,
     contactCenterOfMassX,
@@ -3195,22 +3235,35 @@ function updateEnergyLossBounds() {
   const isWallInelastic =
     geometrySelect.value === "massive-stationary" &&
     characterSelect.value === "inelastic";
+  const isCentralInelastic =
+    geometrySelect.value === "central" &&
+    characterSelect.value === "inelastic";
   const angle = parameterControlValue("theta");
-  const theoreticalMaximum = isWallInelastic
-    ? 100 * Math.cos(angle * Math.PI / 180) ** 2
-    : 100;
-  const maximum = Math.floor((theoreticalMaximum + 1e-9) * 10) / 10;
+  let theoreticalMaximum = 100;
+  if (isWallInelastic) {
+    theoreticalMaximum = 100 * Math.cos(angle * Math.PI / 180) ** 2;
+  } else if (isCentralInelastic) {
+    theoreticalMaximum = maximumCentralEnergyLossPercent(
+      parameterControlValue("m1"),
+      parameterControlValue("m2"),
+      parameterControlValue("u1"),
+      parameterControlValue("u2"),
+    );
+  }
+  const maximum = displayedEnergyLossMaximum(theoreticalMaximum);
   const energyLossNumber = document.querySelector("#energy-loss-number");
   const currentValue = numericInputValue(energyLossNumber);
   const lastValidValue = Number(energyLossNumber.dataset.lastValidValue);
 
   energyLossRange.max = String(maximum);
   configureNumberInput(energyLossRange, energyLossNumber);
-  document.querySelector("#energy-loss-maximum").textContent = Number.isInteger(
-    maximum,
-  )
+  const maximumLabel = document.querySelector("#energy-loss-maximum");
+  maximumLabel.textContent = Number.isInteger(maximum)
     ? String(maximum)
     : decimal(maximum, 1);
+  maximumLabel.title = isCentralInelastic
+    ? "Θεωρητικό μέγιστο· η ισότητα αντιστοιχεί στο όριο της πλαστικής κρούσης."
+    : "";
 
   if (
     !Number.isFinite(currentValue) ||
