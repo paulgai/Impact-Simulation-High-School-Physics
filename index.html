@@ -7,7 +7,7 @@
       name="description"
       content="Διαδραστική εκπαιδευτική εφαρμογή για τη μελέτη των κρούσεων στη Φυσική."
     />
-    <title>Εργαστήριο Κρούσεων</title>
+    <title>Προσομοίωση Κρούσεων</title>
 
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link
@@ -46,14 +46,14 @@
 
         <div class="settings-content">
           <div class="field-group">
-            <label for="collision-geometry" class="form-label"
-              >Κρούση</label
-            >
+            <label for="collision-geometry" class="form-label">Κρούση</label>
             <select id="collision-geometry" class="form-select">
               <option value="central" selected>Κεντρική (Μετωπική)</option>
               <option value="eccentric">Έκκεντρη</option>
               <option value="oblique">Πλάγια (Σημειακές Μάζες)</option>
-              <option value="massive-stationary">Με Ακίνητο Μεγάλης Μάζας</option>
+              <option value="massive-stationary">
+                Με Ακίνητο Μεγάλης Μάζας
+              </option>
             </select>
           </div>
 
@@ -295,13 +295,19 @@
                     Παράμετροι σωμάτων
                   </button>
                 </h3>
-                <div id="masses-collapse" class="accordion-collapse collapse show">
+                <div
+                  id="masses-collapse"
+                  class="accordion-collapse collapse show"
+                >
                   <div class="accordion-body">
                     <div class="parameter-control">
                       <div class="parameter-heading">
                         <div class="parameter-label-with-status">
                           <label for="m1-range"><i>m</i><sub>1</sub></label>
-                          <span id="m-point-mass" class="point-mass-indicator" hidden
+                          <span
+                            id="m-point-mass"
+                            class="point-mass-indicator"
+                            hidden
                             >Σημειακή μάζα</span
                           >
                         </div>
@@ -370,7 +376,12 @@
                       <div class="parameter-heading">
                         <div class="parameter-label-with-status">
                           <label for="r1-range"><i>R</i><sub>1</sub></label>
-                          <span id="r1-point-mass" class="point-mass-indicator" hidden>Σημειακή μάζα</span>
+                          <span
+                            id="r1-point-mass"
+                            class="point-mass-indicator"
+                            hidden
+                            >Σημειακή μάζα</span
+                          >
                         </div>
                         <div class="number-field">
                           <input
@@ -405,7 +416,12 @@
                       <div class="parameter-heading">
                         <div class="parameter-label-with-status">
                           <label for="r2-range"><i>R</i><sub>2</sub></label>
-                          <span id="r2-point-mass" class="point-mass-indicator" hidden>Σημειακή μάζα</span>
+                          <span
+                            id="r2-point-mass"
+                            class="point-mass-indicator"
+                            hidden
+                            >Σημειακή μάζα</span
+                          >
                         </div>
                         <div class="number-field">
                           <input
@@ -484,7 +500,11 @@
                         value="4.0"
                         data-pair="u1-number"
                       />
-                      <div id="u1-range-limits" class="range-limits" aria-hidden="true">
+                      <div
+                        id="u1-range-limits"
+                        class="range-limits"
+                        aria-hidden="true"
+                      >
                         <span>−5</span><span>5</span>
                       </div>
                     </div>
@@ -516,7 +536,11 @@
                         value="-2.0"
                         data-pair="u2-number"
                       />
-                      <div id="u2-range-limits" class="range-limits" aria-hidden="true">
+                      <div
+                        id="u2-range-limits"
+                        class="range-limits"
+                        aria-hidden="true"
+                      >
                         <span>−5</span><span>5</span>
                       </div>
                     </div>
@@ -669,7 +693,7 @@
             id="simulation-viewport"
             class="simulation-viewport"
             tabindex="0"
-            aria-label="Χώρος προσομοίωσης. Χρησιμοποιήστε τη ρόδα για μεγέθυνση και σύρετε για μετακίνηση."
+            aria-label="Χώρος προσομοίωσης. Χρησιμοποιήστε τη ρόδα ή δύο δάχτυλα για μεγέθυνση και σύρετε για μετακίνηση."
           >
             <div id="axis-x" class="coordinate-axis axis-x" aria-hidden="true">
               <span>x</span>
@@ -678,7 +702,7 @@
               <span>y</span>
             </div>
             <div
-            id="simulation-world"
+              id="simulation-world"
               class="simulation-world"
               aria-hidden="true"
             >
@@ -1198,7 +1222,9 @@
                 <i class="bi bi-chevron-right" aria-hidden="true"></i>
                 <span class="visually-hidden">Απόκρυψη αποτελεσμάτων</span>
               </button>
-              <p id="position-results-heading" class="results-heading">Θέσεις</p>
+              <p id="position-results-heading" class="results-heading">
+                Θέσεις
+              </p>
               <div id="position-results-grid" class="results-grid">
                 <span class="scalar-position"><i>x</i><sub>1</sub></span
                 ><span class="scalar-position">=</span
@@ -1206,24 +1232,50 @@
                 <span class="scalar-position"><i>x</i><sub>2</sub></span
                 ><span class="scalar-position">=</span
                 ><strong id="result-x2" class="scalar-position">4,0 m</strong>
-                <span class="eccentric-position" hidden><i>y</i><sub>1</sub></span
+                <span class="eccentric-position" hidden
+                  ><i>y</i><sub>1</sub></span
                 ><span class="eccentric-position" hidden>=</span
-                ><strong id="result-y1" class="eccentric-position" hidden>−0,3 m</strong>
-                <span class="eccentric-position" hidden><i>y</i><sub>2</sub></span
+                ><strong id="result-y1" class="eccentric-position" hidden
+                  >−0,3 m</strong
+                >
+                <span class="eccentric-position" hidden
+                  ><i>y</i><sub>2</sub></span
                 ><span class="eccentric-position" hidden>=</span
-                ><strong id="result-y2" class="eccentric-position" hidden>0,3 m</strong>
+                ><strong id="result-y2" class="eccentric-position" hidden
+                  >0,3 m</strong
+                >
                 <span class="scalar-position"><i>x</i><sub>κ</sub></span
                 ><span class="scalar-position">=</span
-                ><strong id="result-collision-x" class="scalar-position">–</strong>
-                <span class="eccentric-point-position" hidden>(<i>x</i><sub>1</sub>, <i>y</i><sub>1</sub>)</span
+                ><strong id="result-collision-x" class="scalar-position"
+                  >–</strong
+                >
+                <span class="eccentric-point-position" hidden
+                  >(<i>x</i><sub>1</sub>, <i>y</i><sub>1</sub>)</span
                 ><span class="eccentric-point-position" hidden>=</span
-                ><strong id="result-point-1" class="eccentric-point-position" hidden>–</strong>
-                <span class="eccentric-point-position" hidden>(<i>x</i><sub>2</sub>, <i>y</i><sub>2</sub>)</span
+                ><strong
+                  id="result-point-1"
+                  class="eccentric-point-position"
+                  hidden
+                  >–</strong
+                >
+                <span class="eccentric-point-position" hidden
+                  >(<i>x</i><sub>2</sub>, <i>y</i><sub>2</sub>)</span
                 ><span class="eccentric-point-position" hidden>=</span
-                ><strong id="result-point-2" class="eccentric-point-position" hidden>–</strong>
-                <span class="eccentric-point-position" hidden>(<i>x</i><sub>κ</sub>, <i>y</i><sub>κ</sub>)</span
+                ><strong
+                  id="result-point-2"
+                  class="eccentric-point-position"
+                  hidden
+                  >–</strong
+                >
+                <span class="eccentric-point-position" hidden
+                  >(<i>x</i><sub>κ</sub>, <i>y</i><sub>κ</sub>)</span
                 ><span class="eccentric-point-position" hidden>=</span
-                ><strong id="result-collision-point" class="eccentric-point-position" hidden>–</strong>
+                ><strong
+                  id="result-collision-point"
+                  class="eccentric-point-position"
+                  hidden
+                  >–</strong
+                >
               </div>
 
               <p class="results-heading results-subheading">Ταχύτητες</p>
@@ -1286,12 +1338,16 @@
                 >
               </div>
 
-              <div id="massive-wall-velocity-results" class="results-grid" hidden>
-                <span><i>u</i></span><span>=</span
-                ><strong id="result-wall-u">–</strong>
+              <div
+                id="massive-wall-velocity-results"
+                class="results-grid"
+                hidden
+              >
+                <span><i>u</i></span
+                ><span>=</span><strong id="result-wall-u">–</strong>
                 <span><i>u</i>′</span><span>=</span
-                ><strong id="result-wall-u-prime">–</strong>
-                <span>φ</span><span>=</span
+                ><strong id="result-wall-u-prime">–</strong> <span>φ</span
+                ><span>=</span
                 ><strong id="result-wall-incidence-angle">–</strong>
                 <span>θ</span><span>=</span
                 ><strong id="result-wall-reflection-angle">–</strong>
@@ -1337,12 +1393,12 @@
                 ><span>=</span><strong id="result-q">–</strong>
               </div>
               <div id="massive-wall-energy-results" class="results-grid" hidden>
-                <span><i>K</i></span><span>=</span
-                ><strong id="result-wall-k">–</strong>
+                <span><i>K</i></span
+                ><span>=</span><strong id="result-wall-k">–</strong>
                 <span><i>K</i>′</span><span>=</span
                 ><strong id="result-wall-k-prime">–</strong>
-                <span>Δ<i>K</i></span><span>=</span
-                ><strong id="result-wall-delta-k">–</strong>
+                <span>Δ<i>K</i></span
+                ><span>=</span><strong id="result-wall-delta-k">–</strong>
               </div>
               <p id="collision-message" class="collision-message" hidden></p>
             </aside>

@@ -220,6 +220,13 @@ const DEFAULT_CASE_PARAMETERS = {
 const view = { x: 0, y: 0, scale: 1 };
 let applicationZoom = 1;
 const pointer = { active: false, id: null, x: 0, y: 0 };
+const viewportPointers = new Map();
+const pinchGesture = {
+  active: false,
+  distance: 0,
+  centerX: 0,
+  centerY: 0,
+};
 const labelDrag = {
   active: false,
   element: null,
@@ -3646,6 +3653,17 @@ simulationViewport.addEventListener(
   { passive: false },
 );
 
+function preventNativeViewportTouch(event) {
+  event.preventDefault();
+}
+
+simulationViewport.addEventListener("touchstart", preventNativeViewportTouch, {
+  passive: false,
+});
+simulationViewport.addEventListener("touchmove", preventNativeViewportTouch, {
+  passive: false,
+});
+
 simulationViewport.addEventListener("pointerdown", (event) => {
   if (
     event.button !== 0 ||
@@ -3653,15 +3671,34 @@ simulationViewport.addEventListener("pointerdown", (event) => {
   ) {
     return;
   }
-  pointer.active = true;
-  pointer.id = event.pointerId;
-  pointer.x = event.clientX / applicationZoom;
-  pointer.y = event.clientY / applicationZoom;
+  event.preventDefault();
+  viewportPointers.set(event.pointerId, {
+    clientX: event.clientX,
+    clientY: event.clientY,
+  });
   simulationViewport.classList.add("is-panning");
   simulationViewport.setPointerCapture(event.pointerId);
+
+  if (viewportPointers.size >= 2) {
+    startPinchGesture();
+  } else {
+    startPointerPan(event.pointerId, event.clientX, event.clientY);
+  }
 });
 
 simulationViewport.addEventListener("pointermove", (event) => {
+  if (!viewportPointers.has(event.pointerId)) return;
+  viewportPointers.set(event.pointerId, {
+    clientX: event.clientX,
+    clientY: event.clientY,
+  });
+
+  if (viewportPointers.size >= 2) {
+    event.preventDefault();
+    updatePinchGesture();
+    return;
+  }
+
   if (!pointer.active || event.pointerId !== pointer.id) return;
   const pointerX = event.clientX / applicationZoom;
   const pointerY = event.clientY / applicationZoom;
@@ -3672,15 +3709,99 @@ simulationViewport.addEventListener("pointermove", (event) => {
   renderView();
 });
 
-function stopPanning(event) {
-  if (!pointer.active || event.pointerId !== pointer.id) return;
+function startPointerPan(pointerId, clientX, clientY) {
+  pointer.active = true;
+  pointer.id = pointerId;
+  pointer.x = clientX / applicationZoom;
+  pointer.y = clientY / applicationZoom;
+  pinchGesture.active = false;
+}
+
+function viewportLocalPoint(clientX, clientY) {
+  const bounds = simulationViewport.getBoundingClientRect();
+  return {
+    x: (clientX - bounds.left) / applicationZoom,
+    y: (clientY - bounds.top) / applicationZoom,
+  };
+}
+
+function currentPinchGeometry() {
+  const [first, second] = Array.from(viewportPointers.values()).slice(0, 2);
+  if (!first || !second) return null;
+  const center = viewportLocalPoint(
+    (first.clientX + second.clientX) / 2,
+    (first.clientY + second.clientY) / 2,
+  );
+  return {
+    distance: Math.hypot(
+      second.clientX - first.clientX,
+      second.clientY - first.clientY,
+    ),
+    centerX: center.x,
+    centerY: center.y,
+  };
+}
+
+function startPinchGesture() {
+  const geometry = currentPinchGeometry();
+  if (!geometry || geometry.distance <= 0) return;
   pointer.active = false;
   pointer.id = null;
+  pinchGesture.active = true;
+  pinchGesture.distance = geometry.distance;
+  pinchGesture.centerX = geometry.centerX;
+  pinchGesture.centerY = geometry.centerY;
+}
+
+function updatePinchGesture() {
+  const geometry = currentPinchGeometry();
+  if (!geometry || geometry.distance <= 0) return;
+  if (!pinchGesture.active || pinchGesture.distance <= 0) {
+    startPinchGesture();
+    return;
+  }
+
+  const worldX = (pinchGesture.centerX - view.x) / view.scale;
+  const worldY = (pinchGesture.centerY - view.y) / view.scale;
+  const nextScale = clamp(
+    view.scale * (geometry.distance / pinchGesture.distance),
+    MIN_ZOOM,
+    MAX_ZOOM,
+  );
+
+  view.x = geometry.centerX - worldX * nextScale;
+  view.y = geometry.centerY - worldY * nextScale;
+  view.scale = nextScale;
+  pinchGesture.distance = geometry.distance;
+  pinchGesture.centerX = geometry.centerX;
+  pinchGesture.centerY = geometry.centerY;
+  renderView();
+}
+
+function finishViewportPointer(event) {
+  if (!viewportPointers.has(event.pointerId)) return;
+  viewportPointers.delete(event.pointerId);
+
+  if (viewportPointers.size >= 2) {
+    startPinchGesture();
+    return;
+  }
+
+  if (viewportPointers.size === 1) {
+    const [pointerId, position] = viewportPointers.entries().next().value;
+    startPointerPan(pointerId, position.clientX, position.clientY);
+    return;
+  }
+
+  pointer.active = false;
+  pointer.id = null;
+  pinchGesture.active = false;
   simulationViewport.classList.remove("is-panning");
 }
 
-simulationViewport.addEventListener("pointerup", stopPanning);
-simulationViewport.addEventListener("pointercancel", stopPanning);
+simulationViewport.addEventListener("pointerup", finishViewportPointer);
+simulationViewport.addEventListener("pointercancel", finishViewportPointer);
+simulationViewport.addEventListener("lostpointercapture", finishViewportPointer);
 
 function finishLabelDrag(event) {
   if (

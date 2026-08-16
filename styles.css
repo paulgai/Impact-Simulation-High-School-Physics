@@ -218,6 +218,7 @@ body.settings-panel-collapsed.results-panel-collapsed .simulation-area { width: 
   border-radius: 0;
   cursor: grab;
   outline: none;
+  overscroll-behavior: contain;
   touch-action: none;
   user-select: none;
 }
