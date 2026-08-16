@@ -824,8 +824,17 @@ function createMassiveStationaryModel(parameters) {
   const cosine = Math.cos(angle);
   const sine = Math.sin(angle);
   const maximumEnergyLossPercent = 100 * cosine ** 2;
+  const displayedMaximumEnergyLossPercent = displayedEnergyLossMaximum(
+    maximumEnergyLossPercent,
+  );
+  const isDisplayedMaximumSelected =
+    Math.abs(
+      parameters.energyLossPercent - displayedMaximumEnergyLossPercent,
+    ) <= 1e-9;
   const energyLossPercent = isInelastic
-    ? clamp(parameters.energyLossPercent, 0, maximumEnergyLossPercent)
+    ? isDisplayedMaximumSelected
+      ? maximumEnergyLossPercent
+      : clamp(parameters.energyLossPercent, 0, maximumEnergyLossPercent)
     : 0;
   const energyLossRatio = energyLossPercent / 100;
   const u1x = u1 * cosine;
@@ -1468,6 +1477,10 @@ function drawComponentProjections(
   });
 }
 
+function hasTwoVelocityComponents(componentX, componentY) {
+  return Math.abs(componentX) > 1e-8 && Math.abs(componentY) > 1e-8;
+}
+
 function visibleLineSegment(originX, originY, directionX, directionY) {
   const left = -view.x / view.scale;
   const right = (simulationViewport.clientWidth - view.x) / view.scale;
@@ -1671,6 +1684,11 @@ function renderObliqueVelocityComponents(model) {
     prime,
     expressions = null,
   ) => {
+    if (!hasTwoVelocityComponents(velocityX, velocityY)) {
+      hideComponentBody(bodyId);
+      return false;
+    }
+
     drawComponentProjections(
       bodyId,
       ORIGIN_X,
@@ -1700,16 +1718,18 @@ function renderObliqueVelocityComponents(model) {
       velocityY,
       expressions?.y ?? `u${prime}_{y${bodyId.slice(-1)}}`,
     );
+    return true;
   };
 
+  let showsVelocityComponents = false;
   if (isBefore) {
     setComponentBodyPalette("u2", "m2");
     hideComponentBody("u1");
-    drawBody("u2", model.u2x, model.u2y, "");
+    showsVelocityComponents = drawBody("u2", model.u2x, model.u2y, "");
   } else if (model.isPlastic) {
     setComponentBodyPalette("u1", "common");
     hideComponentBody("u2");
-    drawBody(
+    showsVelocityComponents = drawBody(
       "u1",
       model.commonVelocityX,
       model.commonVelocityY,
@@ -1719,9 +1739,11 @@ function renderObliqueVelocityComponents(model) {
   } else {
     setComponentBodyPalette("u1", "m1");
     setComponentBodyPalette("u2", "m2");
-    drawBody("u1", model.v1x, model.v1y, "'");
-    drawBody("u2", model.v2x, model.v2y, "'");
+    const showsFirstVelocity = drawBody("u1", model.v1x, model.v1y, "'");
+    const showsSecondVelocity = drawBody("u2", model.v2x, model.v2y, "'");
+    showsVelocityComponents = showsFirstVelocity || showsSecondVelocity;
   }
+  setElementVisible(collisionCoordinateSystem, showsVelocityComponents);
 }
 
 function renderWallVelocityComponents(model) {
@@ -1730,10 +1752,7 @@ function renderWallVelocityComponents(model) {
   const isAfter = phase === "after";
   const velocityX = isAfter ? model.v1x : model.u1x;
   const velocityY = isAfter ? model.v1y : model.u1y;
-  const hasTwoComponents =
-    model.theta > 0 &&
-    Math.abs(velocityX) > 1e-8 &&
-    Math.abs(velocityY) > 1e-8;
+  const hasTwoComponents = hasTwoVelocityComponents(velocityX, velocityY);
 
   if ((!isBefore && !isAfter) || !hasTwoComponents) {
     hideObliqueVelocityComponents();
@@ -2443,65 +2462,84 @@ function renderGeometricFeatures() {
   const component2X = velocity2X * normalX + velocity2Y * normalY;
   const component2Y = velocity2X * tangentX + velocity2Y * tangentY;
   const prime = isAfter ? "'" : "";
+  const showsFirstVelocity = hasTwoVelocityComponents(
+    component1X,
+    component1Y,
+  );
+  const showsSecondVelocity = hasTwoVelocityComponents(
+    component2X,
+    component2Y,
+  );
 
-  drawComponentProjections(
-    "u1",
-    x1,
-    y1,
-    normalScreenX,
-    normalScreenY,
-    tangentScreenX,
-    tangentScreenY,
-    component1X,
-    component1Y,
-  );
-  drawComponentProjections(
-    "u2",
-    x2,
-    y2,
-    normalScreenX,
-    normalScreenY,
-    tangentScreenX,
-    tangentScreenY,
-    component2X,
-    component2Y,
-  );
-  drawComponentVector(
-    "u1-x",
-    x1,
-    y1,
-    normalScreenX,
-    normalScreenY,
-    component1X,
-    `u${prime}_{x1}`,
-  );
-  drawComponentVector(
-    "u1-y",
-    x1,
-    y1,
-    tangentScreenX,
-    tangentScreenY,
-    component1Y,
-    `u${prime}_{y1}`,
-  );
-  drawComponentVector(
-    "u2-x",
-    x2,
-    y2,
-    normalScreenX,
-    normalScreenY,
-    component2X,
-    `u${prime}_{x2}`,
-  );
-  drawComponentVector(
-    "u2-y",
-    x2,
-    y2,
-    tangentScreenX,
-    tangentScreenY,
-    component2Y,
-    `u${prime}_{y2}`,
-  );
+  if (!showsFirstVelocity) hideComponentBody("u1");
+  if (!showsSecondVelocity) hideComponentBody("u2");
+  if (!showsFirstVelocity && !showsSecondVelocity) {
+    hideObliqueVelocityComponents();
+    return;
+  }
+
+  if (showsFirstVelocity) {
+    drawComponentProjections(
+      "u1",
+      x1,
+      y1,
+      normalScreenX,
+      normalScreenY,
+      tangentScreenX,
+      tangentScreenY,
+      component1X,
+      component1Y,
+    );
+    drawComponentVector(
+      "u1-x",
+      x1,
+      y1,
+      normalScreenX,
+      normalScreenY,
+      component1X,
+      `u${prime}_{x1}`,
+    );
+    drawComponentVector(
+      "u1-y",
+      x1,
+      y1,
+      tangentScreenX,
+      tangentScreenY,
+      component1Y,
+      `u${prime}_{y1}`,
+    );
+  }
+  if (showsSecondVelocity) {
+    drawComponentProjections(
+      "u2",
+      x2,
+      y2,
+      normalScreenX,
+      normalScreenY,
+      tangentScreenX,
+      tangentScreenY,
+      component2X,
+      component2Y,
+    );
+    drawComponentVector(
+      "u2-x",
+      x2,
+      y2,
+      normalScreenX,
+      normalScreenY,
+      component2X,
+      `u${prime}_{x2}`,
+    );
+    drawComponentVector(
+      "u2-y",
+      x2,
+      y2,
+      tangentScreenX,
+      tangentScreenY,
+      component2Y,
+      `u${prime}_{y2}`,
+    );
+  }
 }
 
 function positionMassLabel(label, centerX, centerY, radius) {
@@ -2536,6 +2574,15 @@ function updateResults(model, isAfterCollision) {
 
   if (isMassiveWall) {
     const kineticEnergy = 0.5 * model.m1 * model.u1 ** 2;
+    const isNormalIncidence = Math.abs(model.theta) <= 1e-9;
+    renderLatex(
+      resultSymbol("#result-wall-u"),
+      isNormalIncidence ? "u" : "\\lvert u\\rvert",
+    );
+    renderLatex(
+      resultSymbol("#result-wall-u-prime"),
+      isNormalIncidence ? "u'" : "\\lvert u'\\rvert",
+    );
     renderMeasurement(
       "#result-wall-u",
       model.u1,
@@ -2546,7 +2593,7 @@ function updateResults(model, isAfterCollision) {
     );
     renderMeasurement(
       "#result-wall-u-prime",
-      model.finalSpeed1,
+      isNormalIncidence ? model.v1x : model.finalSpeed1,
       isAfterCollision,
       2,
       "\\mathrm{m}/\\mathrm{s}",
@@ -2650,6 +2697,14 @@ function updateResults(model, isAfterCollision) {
     "\\mathrm{m}",
     "m",
   );
+  renderLatex(
+    resultSymbol("#result-initial-u1"),
+    model.isOblique ? "\\lvert u_1\\rvert" : "u_1",
+  );
+  renderLatex(
+    resultSymbol("#result-initial-u2"),
+    model.isOblique ? "\\lvert u_2\\rvert" : "u_2",
+  );
   renderMeasurement(
     "#result-initial-u1",
     model.u1,
@@ -2668,11 +2723,15 @@ function updateResults(model, isAfterCollision) {
   );
   renderLatex(
     resultSymbol("#result-u1"),
-    model.isEccentric ? "\\lvert u'_1\\rvert" : "u'_1",
+    model.isEccentric || model.isOblique ? "\\lvert u'_1\\rvert" : "u'_1",
   );
   renderLatex(
     resultSymbol("#result-u2"),
-    model.isEccentric ? "\\lvert u'_2\\rvert" : "u'_2",
+    model.isEccentric || model.isOblique ? "\\lvert u'_2\\rvert" : "u'_2",
+  );
+  renderLatex(
+    resultSymbol("#result-common-velocity"),
+    model.isOblique ? "\\lvert v'\\rvert" : "v'",
   );
   renderLatex(
     resultSymbol("#result-angle-u1"),
