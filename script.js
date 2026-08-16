@@ -3653,17 +3653,6 @@ simulationViewport.addEventListener(
   { passive: false },
 );
 
-function preventNativeViewportTouch(event) {
-  event.preventDefault();
-}
-
-simulationViewport.addEventListener("touchstart", preventNativeViewportTouch, {
-  passive: false,
-});
-simulationViewport.addEventListener("touchmove", preventNativeViewportTouch, {
-  passive: false,
-});
-
 simulationViewport.addEventListener("pointerdown", (event) => {
   if (
     event.button !== 0 ||
